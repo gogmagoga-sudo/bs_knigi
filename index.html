@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Богослужебный навигатор · Православный университет</title>
+<style>
+:root{
+  --navy:#14243f; --navy2:#1e3557; --gold:#c9a227; --gold2:#e2c05a;
+  --cream:#fbf7ee; --paper:#fffdf7; --ink:#2a2a2a; --red:#a03030;
+  --blue:#2c5aa0; --green:#2e7d5b; --purple:#6b4a8f; --line:#d9cfb8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Georgia","Times New Roman",serif;background:var(--cream);color:var(--ink);line-height:1.55}
+header{background:linear-gradient(160deg,var(--navy) 0%,var(--navy2) 100%);color:#fff;padding:26px 20px 20px;text-align:center;border-bottom:4px solid var(--gold)}
+header h1{font-size:clamp(20px,3.4vw,32px);letter-spacing:.5px;font-weight:600}
+header .sub{color:var(--gold2);font-size:14px;margin-top:6px;font-style:italic}
+header .cross{font-size:26px;color:var(--gold);display:block;margin-bottom:4px}
+
+nav{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;background:var(--navy2);padding:0 10px;position:sticky;top:0;z-index:50;box-shadow:0 3px 12px rgba(0,0,0,.18)}
+nav button{background:transparent;border:none;color:#cdd8e8;font-family:inherit;font-size:15px;padding:13px 20px;cursor:pointer;border-bottom:3px solid transparent;transition:.2s}
+nav button:hover{color:#fff;background:rgba(255,255,255,.06)}
+nav button.active{color:var(--gold2);border-bottom-color:var(--gold);background:rgba(201,162,39,.1)}
+
+main{max-width:1180px;margin:0 auto;padding:26px 18px 70px}
+section{display:none;animation:fade .3s ease}
+section.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+h2{font-size:23px;color:var(--navy);margin-bottom:6px;font-weight:600}
+h2 .orn{color:var(--gold);margin-right:8px}
+.lead{color:#5a5347;font-size:15px;margin-bottom:20px;max-width:820px}
+h3{font-size:17px;color:var(--navy);margin:24px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--line);font-weight:600}
+
+/* ---------- Библиотека ---------- */
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.filters button{font-family:inherit;font-size:13.5px;padding:7px 15px;border-radius:20px;border:1.5px solid var(--line);background:var(--paper);color:#5a5347;cursor:pointer;transition:.2s}
+.filters button:hover{border-color:var(--gold)}
+.filters button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:16px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px 16px 14px;cursor:pointer;transition:.22s;position:relative;border-top:4px solid var(--gold);overflow:hidden}
+.card:hover{transform:translateY(-4px);box-shadow:0 10px 24px rgba(20,36,63,.14);border-color:var(--gold)}
+.card .badge{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#8a7f68;margin-bottom:5px;font-family:Arial,sans-serif}
+.card h4{font-size:17px;color:var(--navy);margin-bottom:7px;font-weight:600}
+.card p{font-size:13.5px;color:#5a5347;line-height:1.45}
+.card .user{margin-top:10px;font-size:12px;color:var(--blue);font-style:italic;border-top:1px dashed var(--line);padding-top:8px}
+.card.s-scripture{border-top-color:var(--green)}
+.card.s-public{border-top-color:var(--blue)}
+.card.s-treba{border-top-color:var(--purple)}
+.card.s-bishop{border-top-color:var(--red)}
+
+/* ---------- Модальное окно ---------- */
+#modal{display:none;position:fixed;inset:0;background:rgba(14,22,38,.72);z-index:200;padding:20px;overflow-y:auto}
+#modal.open{display:flex;align-items:flex-start;justify-content:center}
+.modal-box{background:var(--paper);border-radius:12px;max-width:820px;width:100%;margin:30px 0;border-top:5px solid var(--gold);overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+.modal-head{background:var(--navy);color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:14px}
+.modal-head h3{color:#fff;border:none;margin:0;padding:0;font-size:20px}
+.modal-close{background:transparent;border:1.5px solid rgba(255,255,255,.4);color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:18px;line-height:1;flex-shrink:0;transition:.2s}
+.modal-close:hover{background:var(--red);border-color:var(--red)}
+.modal-body{padding:22px 24px 26px}
+.modal-body .row{margin-bottom:16px}
+.modal-body .lbl{font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:#8a7f68;font-family:Arial,sans-serif;margin-bottom:4px}
+.modal-body .val{font-size:15px;color:#3b3629}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+@media(max-width:640px){.two-col{grid-template-columns:1fr}}
+a.src-link{display:inline-block;margin-top:4px;color:var(--blue);font-size:14.5px;text-decoration:none;border-bottom:1px dashed var(--blue);word-break:break-all}
+a.src-link:hover{color:var(--red);border-color:var(--red)}
+
+/* ---------- Макет страницы ---------- */
+.mock-page{background:#fffdf5;border:1px solid #cbbf9f;border-radius:4px;padding:16px 16px 20px;font-size:13px;color:#2a2a2a;box-shadow:inset 0 0 26px rgba(180,160,110,.16),0 3px 10px rgba(0,0,0,.09);font-family:"Georgia",serif;min-height:170px;position:relative}
+.mock-page::after{content:"фрагмент страницы";position:absolute;bottom:5px;right:8px;font-size:9.5px;color:#b7a888;font-family:Arial,sans-serif;letter-spacing:.5px}
+.mp-head{text-align:center;font-size:12px;letter-spacing:2px;color:var(--red);border-bottom:1.5px solid #d8cba6;padding-bottom:8px;margin-bottom:10px;font-weight:bold}
+.mp-rubric{color:var(--red);font-size:12.5px;margin:7px 0 2px;font-weight:bold}
+.mp-zachalo{color:var(--red);font-size:12.5px;margin:8px 0 3px;font-weight:bold}
+.mp-text{text-indent:20px;line-height:1.6;color:#2f2a20}
+.mp-prokimen{background:rgba(201,162,39,.13);border-left:3px solid var(--gold);padding:5px 9px;margin:7px 0;font-size:12.5px}
+.mp-slav{text-align:right;color:var(--red);font-size:11.5px;margin-top:8px}
+
+/* ---------- Схема службы ---------- */
+.schema-wrap{display:grid;grid-template-columns:340px 1fr;gap:26px;align-items:start}
+@media(max-width:900px){.schema-wrap{grid-template-columns:1fr}}
+.circle-box{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px}
+.circle-box svg{width:100%;height:auto;display:block}
+.arc{cursor:pointer;transition:.25s}
+.arc:hover{opacity:.82;filter:brightness(1.08)}
+.period-btns{display:flex;flex-direction:column;gap:7px;margin-top:12px}
+.period-btns button{font-family:inherit;font-size:13.5px;text-align:left;padding:9px 13px;border-radius:7px;border:1.5px solid var(--line);background:var(--paper);cursor:pointer;color:#4a4436;transition:.2s}
+.period-btns button:hover{border-color:var(--gold)}
+.period-btns button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.period-btns .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px}
+
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+.panel h3{margin-top:0}
+.leading-badge{display:inline-block;background:var(--gold);color:#241d08;font-size:13px;padding:5px 14px;border-radius:16px;font-weight:bold;margin-bottom:10px}
+.svc-tabs{display:flex;gap:6px;margin:16px 0 14px;flex-wrap:wrap}
+.svc-tabs button{font-family:inherit;font-size:13.5px;padding:8px 15px;border-radius:8px 8px 0 0;border:1px solid var(--line);border-bottom:none;background:#f2ecdd;cursor:pointer;color:#6a6252}
+.svc-tabs button.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.book-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.book-chip{background:#eef3fa;border:1px solid #c3d4e8;color:var(--navy);padding:6px 13px;border-radius:18px;font-size:13.5px;cursor:pointer;transition:.2s}
+.book-chip:hover{background:var(--navy);color:#fff;border-color:var(--navy)}
+.note-box{background:rgba(201,162,39,.1);border-left:4px solid var(--gold);padding:12px 15px;border-radius:0 8px 8px 0;font-size:14px;color:#4a4436}
+
+/* ---------- Этапы службы ---------- */
+.stages-box{margin-top:18px;border-top:1px dashed var(--line);padding-top:14px}
+.stages-title{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:#8a7f68;font-family:Arial,sans-serif;margin-bottom:8px}
+.stages-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:#6a6252;margin-bottom:12px;font-family:Arial,sans-serif}
+.stages-legend span{display:inline-flex;align-items:center;gap:5px}
+.stage-section{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--red);font-family:Arial,sans-serif;font-weight:bold;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.stage-item{border:1px solid var(--line);border-radius:8px;margin-bottom:7px;overflow:hidden;background:#faf7ee}
+.stage-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 13px;cursor:pointer;font-size:13.5px;color:var(--navy);font-weight:600;transition:.18s}
+.stage-head:hover{background:#f2ecdd}
+.stage-head .num{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background:var(--gold);color:#241d08;font-size:12px;margin-right:9px;font-family:Arial,sans-serif;flex-shrink:0}
+.stage-name{display:flex;align-items:center;flex:1}
+.stage-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.stage-head .arrow{transition:.2s;color:#a89e8a;font-size:12px}
+.stage-head.open .arrow{transform:rotate(90deg)}
+.stage-body{display:none;padding:11px 14px 13px;border-top:1px solid var(--line);background:var(--paper)}
+.stage-body.open{display:block}
+.stage-body .src-book{font-size:13px;color:var(--red);font-weight:bold;margin-bottom:5px}
+.stage-body .src-desc{font-size:13.5px;color:#4a4436;line-height:1.5}
+.type-badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;font-family:Arial,sans-serif;font-weight:normal;letter-spacing:.3px;white-space:nowrap}
+.type-badge.fixed{background:#e3f0e9;color:#1c5a3d}
+.type-badge.changing{background:#fff0d6;color:#8a5a00}
+
+/* ---------- Столпы Евангельские ---------- */
+.gospel-box{margin-top:18px;border-top:1px dashed var(--line);padding-top:14px}
+.gospel-title{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:#8a7f68;font-family:Arial,sans-serif;margin-bottom:8px}
+.gospel-intro{font-size:13px;color:#6a6252;margin-bottom:10px}
+.stolp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:6px}
+.stolp-cell{background:#faf6ea;border:1.5px solid var(--line);border-radius:7px;padding:8px 4px;text-align:center;cursor:pointer;transition:.18s}
+.stolp-cell:hover{border-color:var(--gold)}
+.stolp-cell.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.stolp-cell .gl{font-size:11px;color:#8a7f68;font-family:Arial,sans-serif}
+.stolp-cell.active .gl{color:var(--gold2)}
+.stolp-cell .ev{font-size:16px;font-weight:bold;color:var(--navy)}
+.stolp-cell.active .ev{color:#fff}
+.stolp-info{background:rgba(201,162,39,.1);border-left:4px solid var(--gold);padding:10px 14px;border-radius:0 8px 8px 0;font-size:13.5px;color:#4a4436;margin-top:10px}
+.stolp-info b{color:var(--red)}
+
+/* ---------- Тренажёр ---------- */
+.game-box{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:22px;margin-bottom:20px}
+.game-title{font-size:16px;color:var(--navy);font-weight:600;margin-bottom:4px}
+.game-desc{font-size:13.5px;color:#7a7264;margin-bottom:16px;font-style:italic}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:9px;margin-top:14px}
+.opt{font-family:inherit;font-size:14px;padding:11px 14px;border-radius:8px;border:1.5px solid var(--line);background:#faf6ea;cursor:pointer;text-align:left;transition:.18s;color:#3b3629}
+.opt:hover:not(:disabled){border-color:var(--gold);background:#f6efd9}
+.opt.correct{background:#dff2e6;border-color:var(--green);color:#1c5a3d;font-weight:bold}
+.opt.wrong{background:#f9e0e0;border-color:var(--red);color:#8a2020}
+.opt:disabled{cursor:default}
+.feedback{margin-top:14px;font-size:14px;min-height:22px;font-weight:bold}
+.feedback.ok{color:var(--green)}
+.feedback.no{color:var(--red)}
+.score-line{font-size:13.5px;color:#7a7264;margin-top:10px;font-family:Arial,sans-serif}
+.btn-main{font-family:inherit;font-size:15px;padding:10px 24px;border-radius:8px;border:none;background:var(--navy);color:#fff;cursor:pointer;transition:.2s;margin-top:12px}
+.btn-main:hover{background:var(--gold);color:#241d08}
+.chip-select{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.chip-sel{font-family:inherit;font-size:13.5px;padding:8px 14px;border-radius:18px;border:1.5px solid var(--line);background:#faf6ea;cursor:pointer;color:#3b3629;transition:.18s}
+.chip-sel.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.chip-sel.right{background:#dff2e6;border-color:var(--green);color:#1c5a3d}
+.chip-sel.missed{background:#fff4d6;border-color:var(--gold);color:#7a5a00}
+.chip-sel.extra{background:#f9e0e0;border-color:var(--red);color:#8a2020}
+
+/* ---------- Тест ---------- */
+.q-card{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+.q-num{font-size:12px;color:#8a7f68;letter-spacing:.7px;font-family:Arial,sans-serif;margin-bottom:6px}
+.q-text{font-size:15.5px;color:var(--navy);font-weight:600;margin-bottom:12px}
+.q-opts{display:flex;flex-direction:column;gap:7px}
+.q-opt{font-family:inherit;font-size:14.5px;padding:10px 14px;border-radius:7px;border:1.5px solid var(--line);background:#faf6ea;cursor:pointer;text-align:left;transition:.16s;color:#3b3629}
+.q-opt:hover:not(:disabled){border-color:var(--gold)}
+.q-opt.correct{background:#dff2e6;border-color:var(--green);color:#1c5a3d;font-weight:bold}
+.q-opt.wrong{background:#f9e0e0;border-color:var(--red);color:#8a2020}
+.result-banner{background:var(--navy);color:#fff;border-radius:10px;padding:20px 24px;text-align:center;margin-top:18px;border-top:4px solid var(--gold)}
+.result-banner .big{font-size:32px;color:var(--gold2);font-weight:bold}
+.result-banner .txt{font-size:15px;margin-top:6px;color:#d6dfec}
+footer{text-align:center;padding:26px 16px 40px;color:#8a7f68;font-size:12.5px;border-top:1px solid var(--line);margin-top:30px;font-family:Arial,sans-serif}
+footer a{color:var(--blue);text-decoration:none}
+</style>
+</head>
+<body>
+
+<header>
+  <span class="cross">✠</span>
+  <h1>Богослужебный навигатор</h1>
+  <div class="sub">Интерактивный курс: книги, круги, схемы служб · Православный университет</div>
+</header>
+
+<nav>
+  <button class="active" data-tab="library">📖 Библиотека</button>
+  <button data-tab="schema">🗓️ Схема службы</button>
+  <button data-tab="trainer">🎮 Тренажёр</button>
+  <button data-tab="quiz">✅ Проверка знаний</button>
+</nav>
+
+<main>
+  <section id="library" class="active">
+    <h2><span class="orn">❧</span>Библиотека богослужебных книг</h2>
+    <p class="lead">Нажмите на карточку, чтобы открыть определение, указание пользователя книги, характерную страницу и ссылку на конкретное издание.</p>
+    <div class="filters" id="filters"></div>
+    <div class="grid" id="bookGrid"></div>
+  </section>
+
+  <section id="schema">
+    <h2><span class="orn">❧</span>Схема богослужебного года</h2>
+    <p class="lead">Годовой круг строится на сочетании трёх изменяемых книг — <b>Октоиха</b>, <b>Минеи</b> и <b>Триоди</b>. Выберите период, затем службу — и увидите, какие книги участвуют в каждом этапе, включая тропари, стихиры, догматики и столповые Евангелия.</p>
+    <div class="schema-wrap">
+      <div class="circle-box">
+        <svg viewBox="0 0 400 400" id="yearCircle">
+          <circle cx="200" cy="200" r="168" fill="none" stroke="#c9a227" stroke-width="14" opacity="0.38" stroke-dasharray="5 7"/>
+          <circle class="arc" data-period="pentecost" cx="200" cy="200" r="135" fill="none" stroke="#2e7d5b" stroke-width="26" stroke-dasharray="127 721" transform="rotate(-90 200 200)"/>
+          <circle class="arc" data-period="octoechos" cx="200" cy="200" r="135" fill="none" stroke="#2c5aa0" stroke-width="26" stroke-dasharray="530 318" stroke-dashoffset="-127" transform="rotate(-90 200 200)"/>
+          <circle class="arc" data-period="lent" cx="200" cy="200" r="135" fill="none" stroke="#6b4a8f" stroke-width="26" stroke-dasharray="191 657" stroke-dashoffset="-657" transform="rotate(-90 200 200)"/>
+          <text x="200" y="195" text-anchor="middle" font-size="15" fill="#14243f" font-family="Georgia" font-weight="bold">ГОДОВОЙ</text>
+          <text x="200" y="215" text-anchor="middle" font-size="15" fill="#14243f" font-family="Georgia" font-weight="bold">КРУГ</text>
+          <text x="200" y="18" text-anchor="middle" font-size="12" fill="#2e7d5b" font-family="Arial" font-weight="bold">ПАСХА · Триодь Цветная</text>
+          <text x="200" y="392" text-anchor="middle" font-size="12" fill="#2c5aa0" font-family="Arial" font-weight="bold">Период Октоиха</text>
+          <text x="18" y="290" text-anchor="middle" font-size="12" fill="#6b4a8f" font-family="Arial" font-weight="bold">Триодь Постная</text>
+          <text x="18" y="120" text-anchor="middle" font-size="11" fill="#8a7f68" font-family="Arial">от мытаря и фарисея</text>
+          <text x="382" y="290" text-anchor="middle" font-size="11" fill="#8a7f68" font-family="Arial">до Всех святых</text>
+        </svg>
+        <div class="period-btns" id="periodBtns"></div>
+      </div>
+
+      <div class="panel">
+        <h3 id="periodTitle">—</h3>
+        <div id="leadingWrap"><span class="leading-badge" id="leadingBook">—</span></div>
+        <p style="font-size:14.5px;color:#5a5347" id="periodDesc"></p>
+
+        <div class="svc-tabs" id="svcTabs">
+          <button class="active" data-svc="vechernya">Вечерня</button>
+          <button data-svc="utrenya">Утреня</button>
+          <button data-svc="vsenoshnoe">Всенощное бдение</button>
+          <button data-svc="liturgiya">Литургия</button>
+        </div>
+
+        <div class="lbl" style="font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:#8a7f68;font-family:Arial;margin-bottom:8px">Книги, задействованные в службе</div>
+        <div class="book-chips" id="schemaBooks"></div>
+        <div class="note-box" id="serviceNote"></div>
+
+        <div class="stages-box">
+          <div class="stages-title">Этапы службы и источники текстов</div>
+          <div class="stages-legend">
+            <span><span class="type-badge fixed">неизм.</span> неизменяемая часть</span>
+            <span><span class="type-badge changing">изм.</span> изменяемая часть</span>
+          </div>
+          <div id="stagesList"></div>
+        </div>
+
+        <!-- НОВЫЙ БЛОК: Столпы Евангельские -->
+        <div class="gospel-box" id="gospelBox">
+          <div class="gospel-title">Столпы Евангельские</div>
+          <div class="gospel-intro">11 воскресных утренних Евангелий чередуются по столпам (Типикон, гл. 54). Нажмите на глас, чтобы увидеть, какое Евангелие читается на утрене.</div>
+          <div class="stolp-grid" id="stolpGrid"></div>
+          <div class="stolp-info" id="stolpInfo">Выберите глас.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="trainer">
+    <h2><span class="orn">❧</span>Тренажёр</h2>
+    <p class="lead">Три упражнения на закрепление материала: узнавание книги по странице, определение пользователя и сборка службы из нужных книг.</p>
+
+    <div class="game-box">
+      <div class="game-title">① Угадай книгу по характерной странице</div>
+      <div class="game-desc">Перед вами фрагмент разворота. Определите, из какой книги он взят.</div>
+      <div class="two-col">
+        <div id="g1mock"></div>
+        <div>
+          <div class="opts" id="g1opts" style="grid-template-columns:1fr;margin-top:0"></div>
+          <div class="feedback" id="g1fb"></div>
+          <button class="btn-main" id="g1next">Следующая книга →</button>
+          <div class="score-line" id="g1score">Счёт: 0 / 0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="game-box">
+      <div class="game-title">② Кто использует эту книгу?</div>
+      <div class="game-desc">Выберите основного пользователя книги за богослужением.</div>
+      <div class="game-title" id="g2book" style="color:var(--gold);font-size:19px;margin:10px 0"></div>
+      <div class="opts" id="g2opts"></div>
+      <div class="feedback" id="g2fb"></div>
+      <button class="btn-main" id="g2next">Далее →</button>
+      <div class="score-line" id="g2score">Счёт: 0 / 0</div>
+    </div>
+
+    <div class="game-box">
+      <div class="game-title">③ Собери службу</div>
+      <div class="game-desc">Отметьте все книги, которые реально используются в указанной службе.</div>
+      <div class="game-title" id="g3task" style="color:var(--navy);font-size:16px;margin:10px 0"></div>
+      <div class="chip-select" id="g3chips"></div>
+      <div class="feedback" id="g3fb"></div>
+      <button class="btn-main" id="g3check">Проверить</button>
+      <button class="btn-main" id="g3next" style="background:#8a7f68">Другое задание →</button>
+      <div class="score-line" id="g3score">Счёт: 0 / 0</div>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <h2><span class="orn">❧</span>Проверка знаний</h2>
+    <p class="lead">Итоговый тест из 20 вопросов. Выберите один вариант ответа в каждом вопросе — правильный ответ подсветится сразу.</p>
+    <div id="quizList"></div>
+    <div id="quizResult"></div>
+    <button class="btn-main" id="quizReset">Пройти заново</button>
+  </section>
+</main>
+
+<div id="modal">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="mTitle">—</h3><button class="modal-close" id="mClose">×</button></div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<footer>
+  «Богослужебный навигатор» · учебное интерактивное пособие<br>
+  Источники текстов и сканов: <a href="https://azbyka.ru/" target="_blank" rel="noopener">Азбука.ру</a> · Составлено по Типикону и учебным пособиям по литургике
+</footer>
+
+<script>
+/* ============================================================
+   1. ДАННЫЕ: КНИГИ
+   ============================================================ */
+const SECTIONS = {
+  scripture:{name:'Священно-богослужебные книги',cls:'s-scripture'},
+  public:{name:'Книги общественного богослужения',cls:'s-public'},
+  treba:{name:'Книги для совершения треб',cls:'s-treba'},
+  bishop:{name:'Книги архиерейского служения',cls:'s-bishop'}
+};
+
+const BOOKS = [
+  {id:'evangelie',section:'scripture',title:'Евангелие',
+    def:'Содержит повествования четырёх евангелистов. Богослужебное Евангелие разделено на «зачала» — пронумерованные отрывки для чтения за Литургией и на утрене. В конце книги помещён указатель евангельских чтений на каждый день года, а также таблица 11 воскресных утренних Евангелий (столпы евангельские).',
+    user:'Диакон (возглашает), священник; на Литургии читается только священнослужителем',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/evangelie-bogosluzhebnoe-grazhdanskim-shriftom-s-udarenijami/',
+    mock:`<div class="mp-zachalo">Зачало 1-е</div><div class="mp-text">Книга родства Иисуса Христа, Сына Давидова, Сына Авраамля. Авраам роди Исаака, Исаак же роди Иакова...</div><div class="mp-rubric">[Лик:] Слава Тебе, Господи, слава Тебе.</div>`},
+  {id:'apostol',section:'scripture',title:'Апостол',
+    def:'Включает Деяния святых апостолов и их Послания (соборные и к Павлу). Текст разделён на зачала; перед чтением помещены прокимны и аллилуиарии, а также указатель рядовых чтений.',
+    user:'Чтец, иподиакон, диакон (на Литургии)',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/apostol-bogosluzhebnyj-grazhdanskim-shriftom-s-udarenijami/',
+    mock:`<div class="mp-prokimen"><b>Прокимен, глас 8:</b> Помолитеся и воздадите Господеви Богу нашему.</div><div class="mp-zachalo">Зачало 1-е</div><div class="mp-text">Первую убо словеса сотворих о всех, о Феофиле, яже начат Иисус творити же и учити...</div>`},
+  {id:'psaltir',section:'scripture',title:'Псалтирь',
+    def:'Книга псалмов, разделённая на 20 кафизм. Каждая кафизма делится на три «славы». Псалтирь читается на всех суточных службах (кроме Литургии), а также на часах и заупокойных последованиях.',
+    user:'Чтец, клирос, все молящиеся (в том числе на «неусыпаемой» Псалтири)',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/psaltir/',
+    mock:`<div class="mp-zachalo">Кафизма 1-я</div><div class="mp-rubric">[Чтец:] Аминь.</div><div class="mp-text">Блажен муж, иже не иде на совет нечестивых и на пути грешных не ста, и на седалищи губителей не седе...</div><div class="mp-slav">Слава Отцу и Сыну и Святому Духу...</div>`},
+  {id:'sluzhebnik',section:'public',title:'Служебник',
+    def:'Содержит молитвы священнослужителей для совершения Литургии (трёх чинов), вечерни и утрени. Включает возгласы, ектении, тайные молитвы и указания диакону.',
+    user:'Священник и диакон',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/sluzhebnik-na-tserkovnoslavjanskom-jazyke-grazhdanskim-shriftom/',
+    mock:`<div class="mp-rubric">Священник (тайно):</div><div class="mp-text">Благословено Царство Отца и Сына и Святаго Духа, ныне и присно и во веки веков.</div><div class="mp-rubric">Диакон:</div><div class="mp-text">Миром Господу помолимся.</div>`},
+  {id:'chasoslov',section:'public',title:'Часослов',
+    def:'Включает неизменяемые молитвословия суточных служб: вечерни, утрени, часов (1-го, 3-го, 6-го, 9-го), изобразительных и повечерия — всё, кроме Литургии.',
+    user:'Чтец, клирос, священник (при совершении часов)',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/chasoslov/',
+    mock:`<div class="mp-zachalo">Час третий</div><div class="mp-rubric">[Чтец:]</div><div class="mp-text">Приидите, поклонимся Цареви нашему Богу. Приидите, поклонимся и припадем Христу, Цареви нашему Богу...</div>`},
+  {id:'oktoih',section:'public',title:'Октоих (Осмогласник)',
+    def:'Сборник песнопений, распределённых по восьми гласам. Содержит изменяемые тексты седмичного круга: стихиры, каноны, тропари на каждый день недели. В Октоихе помещены воскресные догматики (по одному на каждый глас) и таблица евангельских столпов. Поётся от Недели Всех святых до Недели о мытаре и фарисее.',
+    user:'Клирос, регент, чтец (каноны)',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/oktoih/',
+    mock:`<div class="mp-rubric">В субботу вечера, на «Господи, воззвах»:</div><div class="mp-text">Господи, воззвах к Тебе, услыши мя. Услыши мя, Господи. Господи, воззвах к Тебе, услыши мя...</div>`},
+  {id:'mineya-m',section:'public',title:'Минея месячная',
+    def:'Содержит изменяемые молитвословия на каждый день месяца — службы неподвижных праздников и святых. Издаётся обычно в 12 томах (по числу месяцев).',
+    user:'Священник, чтец, клирос',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/mineja-sentjabr/',
+    mock:`<div class="mp-zachalo">1-е число</div><div class="mp-rubric">Тропарь святому, глас 4:</div><div class="mp-text">Правило веры и образ кротости, воздержания учителя яви тя стаду твоему...</div>`},
+  {id:'mineya-o',section:'public',title:'Минея общая',
+    def:'Содержит общие песнопения в честь целого лика святых: апостолов, мучеников, святителей, преподобных, жен-подвижниц и др. В текстах оставлены пропуски, куда вписывается имя святого («имярек»). Используется, когда нет службы святому в месячной Минее.',
+    user:'Священник, чтец (при отсутствии месячной службы)',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/mineja-obshhaja/',
+    mock:`<div class="mp-rubric">Служба мученику единому. Тропарь, глас 4:</div><div class="mp-text">Мученик Твой, Господи, <b>имярек</b>, во страдании своем венец прият нетленный от Тебе, Бога нашего...</div>`},
+  {id:'mineya-p',section:'public',title:'Минея праздничная',
+    def:'Отдельный сборник служб на великие и особо чтимые праздники (двунадесятые и некоторые другие). Представляет собой выборку из месячной Минеи для удобства клироса и священника.',
+    user:'Чтец, клирос, священник',
+    url:'https://azbyka.ru/bogosluzhenie/1/prazdnichnaya-mineya/',
+    mock:`<div class="mp-zachalo">Рождество Христово</div><div class="mp-rubric">Стихиры на «Господи, воззвах», глас 2:</div><div class="mp-text">Приидите, возрадуемся Господеви, настоящую тайну сказующе...</div>`},
+  {id:'triod-post',section:'public',title:'Триодь постная',
+    def:'Содержит песнопения великопостного периода — от Недели о мытаре и фарисее до Пасхи. Название происходит от трёх песней в канонах. Включает службы Великого поста, Страстной седмицы и Великий канон Андрея Критского.',
+    user:'Священник, чтец, клирос',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/triod-postnaja-na-tserkovnoslavjanskom-jazyke-chast-1/',
+    mock:`<div class="mp-rubric">Неделя о мытаре и фарисее</div><div class="mp-rubric">Стихиры, глас 1:</div><div class="mp-text">Покаяния отверзи ми двери, Жизнодавче, утренюет бо дух мой ко храму святому Твоему...</div>`},
+  {id:'triod-cvet',section:'public',title:'Триодь цветная',
+    def:'Содержит песнопения пасхального периода — от Пасхи до Недели Всех святых. Включает службы Пасхи, Светлой седмицы, Вознесения, Троицы и Недели Всех святых.',
+    user:'Священник, чтец, клирос',
+    url:'https://azbyka.org/otechnik/Pravoslavnoe_Bogosluzhenie/triod-tsvetnaja-pentikostarion-sergievskaja-1915/',
+    mock:`<div class="mp-zachalo">Пасха Христова</div><div class="mp-text">Христос воскресе из мертвых, смертию смерть поправ и сущим во гробех живот даровав.</div>`},
+  {id:'tipikon',section:'public',title:'Типикон (Устав)',
+    def:'Подробный порядок совершения богослужений в разное время года. Содержит общие главы и Месяцеслов (глава 48), где указано, как в каждый день соединяются тексты Октоиха, Минеи и Триоди. Глава 54 содержит таблицу евангельских столпов. Главный регулятор богослужебной жизни.',
+    user:'Уставщик, священник, регент, клирос',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/tipikon/',
+    mock:`<div class="mp-zachalo">Глава 48. Месяцеслов</div><div class="mp-text">Аще случится праздник Господский или Богородичный в неделю, зри в Минеи праздничней...</div>`},
+  {id:'irmologiy',section:'public',title:'Ирмологий',
+    def:'Сборник ирмосов — начальных песнопений канонов — всех восьми гласов. Необходим клиросу для правильного пения канонов на утрене. Часто включает также катавасии и подобны.',
+    user:'Клирос, регент, чтец (ирмосы)',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/irmologij/',
+    mock:`<div class="mp-zachalo">Ирмосы 1-го гласа</div><div class="mp-rubric">Песнь 1:</div><div class="mp-text">Твоя победительная десница боголепно в крепости прославися...</div>`},
+  {id:'molebny',section:'public',title:'Книга молебных пений',
+    def:'Содержит последования молебнов на разные жизненные случаи: о здравии, о путешествующих, о недужных, благодарственные молебны и др. Относится к частному богослужению.',
+    user:'Священник',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/kniga-molebnyh-penij/',
+    mock:`<div class="mp-zachalo">Последование молебного пения о здравии</div><div class="mp-text">Благословен Бог наш всегда, ныне и присно и во веки веков...</div>`},
+  {id:'trebnik',section:'treba',title:'Требник (большой и малый)',
+    def:'Изложение священнодействий и молитвословий для таинств и обрядов: крещения, миропомазания, венчания, елеосвящения, исповеди, погребения, освящения дома, воды и др. Большой Требник полнее малого.',
+    user:'Священник',
+    url:'https://azbyka.ru/bogosluzhenie/1/trebnik/',
+    mock:`<div class="mp-zachalo">Чин Крещения</div><div class="mp-rubric">Священник:</div><div class="mp-text">Благословено Царство Отца и Сына и Святаго Духа, ныне и присно и во веки веков. Аминь.</div>`},
+  {id:'chinovnik',section:'bishop',title:'Чиновник архиерейского священнослужения',
+    def:'Содержит чины Литургии, хиротоний (во диакона, во пресвитера, во епископа), освящения храма, а также другие торжественные последования, совершаемые архиереем. Учитывает особенности архиерейского служения.',
+    user:'Епископ (архиерей), а также сослужащее духовенство',
+    url:'https://azbyka.ru/otechnik/Pravoslavnoe_Bogosluzhenie/arhierejskij-chinovnik/',
+    mock:`<div class="mp-zachalo">Чин хиротонии во пресвитера</div><div class="mp-text">Божественная благодать, всегда немощная врачующи и оскудевающая восполняющи...</div>`}
+];
+
+const BOOK_BY_ID = {};
+BOOKS.forEach(b => BOOK_BY_ID[b.id] = b);
+const FIXED_BOOKS = ['chasoslov','sluzhebnik','psaltir','irmologiy'];
+function bookType(id){ return FIXED_BOOKS.includes(id) ? 'fixed' : 'changing'; }
+
+/* ============================================================
+   2. СТОЛПЫ ЕВАНГЕЛЬСКИЕ (Типикон, гл. 54)
+   ============================================================ */
+const GOSPEL_STOLPY = [
+  {gl:1, ev:2}, {gl:2, ev:3}, {gl:3, ev:4}, {gl:4, ev:5},
+  {gl:5, ev:6}, {gl:6, ev:7}, {gl:7, ev:8}, {gl:8, ev:9},
+  {gl:1, ev:10}, {gl:2, ev:11}, {gl:3, ev:1}, {gl:4, ev:2},
+  {gl:5, ev:3}, {gl:6, ev:4}, {gl:7, ev:5}, {gl:8, ev:6},
+  {gl:1, ev:7}, {gl:2, ev:8}, {gl:3, ev:9}, {gl:4, ev:10},
+  {gl:5, ev:11}, {gl:6, ev:1}, {gl:7, ev:2}, {gl:8, ev:3},
+  {gl:1, ev:4}, {gl:2, ev:5}, {gl:3, ev:6}, {gl:4, ev:7},
+  {gl:5, ev:8}, {gl:6, ev:9}, {gl:7, ev:10}, {gl:8, ev:11},
+  {gl:1, ev:1}, {gl:2, ev:2}, {gl:3, ev:3}, {gl:4, ev:4},
+  {gl:5, ev:5}, {gl:6, ev:6}, {gl:7, ev:7}, {gl:8, ev:8},
+  {gl:1, ev:9}, {gl:2, ev:10}, {gl:3, ev:11}, {gl:4, ev:1},
+  {gl:5, ev:2}, {gl:6, ev:3}, {gl:7, ev:4}, {gl:8, ev:5},
+  {gl:1, ev:6}, {gl:2, ev:7}, {gl:3, ev:8}, {gl:4, ev:9},
+  {gl:5, ev:10}, {gl:6, ev:11}, {gl:7, ev:1}, {gl:8, ev:2}
+];
+
+const GOSPEL_NAMES = {
+  1:'«Камени запечатану от иудей...»',
+  2:'«Егда снизшел еси к смерти...»',
+  3:'«Мироносицам женам...»',
+  4:'«Воскрес Иисус от гроба...»',
+  5:'«Жены с миры пришедшыя...»',
+  6:'«Слава Тебе, Христе Боже...»',
+  7:'«Петр же и Иоанн...»',
+  8:'«Петр востав тече...»',
+  9:'«Субботы убо мимошедшей...»',
+  10:'«Своими учеником прииде...»',
+  11:'«Мария стояше у гроба...»'
+};
+
+let currentStolpIndex = 0;
+
+/* ============================================================
+   3. ДАННЫЕ: ПЕРИОДЫ, СЛУЖБЫ, ЭТАПЫ
+   ============================================================ */
+const SERVICE_DATA = {
+  octoechos:{
+    name:'Период пения Октоиха',
+    sub:'от Недели Всех святых до Недели о мытаре и фарисее',
+    color:'#2c5aa0',
+    leading:'oktoih',
+    desc:'Самый продолжительный период года. Основу изменяемых песнопений составляют Октоих (по гласу седмицы) и Минея месячная (по памяти дня). В воскресные дни Октоих имеет приоритет, и служба Минеи к нему лишь «присоединяется».',
+    services:{
+      vsenoshnoe:{
+        books:['chasoslov','sluzhebnik','oktoih','mineya-m','psaltir','evangelie','irmologiy'],
+        note:'Всенощное бдение — торжественное богослужение накануне воскресных дней и великих праздников. Состоит из Великой вечерни, утрени и первого часа. Неизменяемые части — из Часослова и Служебника; изменяемые — из Октоиха и Минеи. Воскресное Евангелие на утрене определяется столпом евангельским.',
+        stages:[
+          {section:'Великая вечерня', name:'Начальный возглас, 103-й псалом, великая ектения', book:'chasoslov', desc:'Священник: «Благословен Бог наш...». Чтец читает 103-й псалом; диакон произносит великую ектению — по Часослову и Служебнику.'},
+          {name:'Кафизма «Блажен муж»', book:'psaltir', desc:'Первая кафизма Псалтири — на воскресной и праздничной вечерне.'},
+          {name:'Стихиры на «Господи, воззвах»', book:'oktoih', desc:'Воскресных стихир Октоиха — 3, восточных (анатолиевых) — 4, Минеи — 3 (всего на 10). Если память святому, то 4 стихиры Октоиха и 6 святому. Каждая стихира имеет свой глас согласно указанию Октоиха.'},
+          {name:'Догматик', book:'oktoih', desc:'Богородичен-догматик гласа (по одному на каждый из 8 гласов). В нём излагается догмат о рождении Сына Божия от Пречистой Девы. Поётся на «И ныне» после стихир на «Господи, воззвах». Во время пения догматика совершается вход с кадилом. Догматик почти никогда не отменяется.'},
+          {name:'Вход с кадилом, «Свете тихий»', book:'chasoslov', desc:'Вход с кадилом; «Свете тихий» — неизменяемое песнопение по Часослову. На воскресной и праздничной службе «Свете тихий» поётся, а не читается.'},
+          {name:'Прокимен дня', book:'chasoslov', desc:'Прокимен субботы — по Часослову или Служебнику. Звучит 5 раз (3 стиха), в отличие от обычного прокимна (3 раза).'},
+          {name:'Лития (в праздники)', book:'mineya-m', desc:'Стихиры литии — из Минеи (праздничной или месячной); чин литии — по Служебнику. Лития — непременная принадлежность воскресного бдения.'},
+          {name:'Стихиры на стиховне', book:'oktoih', desc:'Из Октоиха, как правило, все 4 стихиры субботы вечера. На «Слава» может быть стихира Минеи, на «И ныне» — Богородичен.'},
+          {name:'«Ныне отпущаеши», Трисвятое', book:'chasoslov', desc:'Молитва св. Симеона Богоприимца и Трисвятое — по Часослову.'},
+          {name:'Тропарь праздника', book:'mineya-m', desc:'Тропарь — из Минеи (или Октоиха, если воскресный день без праздника).'},
+          {section:'Утреня', name:'Шестопсалмие', book:'chasoslov', desc:'Шесть псалмов (3, 37, 62, 87, 102, 142) — неизменяемая часть утрени по Часослову.'},
+          {name:'Великая ектения, «Бог Господь»', book:'chasoslov', desc:'Ектения — по Служебнику; «Бог Господь» — по Часослову.'},
+          {name:'Тропарь на «Бог Господь»', book:'oktoih', desc:'Воскресный тропарь гласа (поётся дважды). «Слава» — тропарь святому из Минеи (если есть), «И ныне» — Богородичен по гласу тропаря. Если праздник, тропарь праздника может петься единожды.'},
+          {name:'Кафизмы', book:'psaltir', desc:'На воскресной утрени всегда читаются 2-я и 3-я кафизмы. Седальны по кафизмам — воскресные Октоиха.'},
+          {name:'Полиелей и величание (в праздники)', book:'mineya-m', desc:'Полиелей, величание и стихиры — из Минеи (в воскресные дни — по Октоиху). После полиелея — ипакои гласа из Октоиха.'},
+          {name:'Евангелие на утрене (столповое)', book:'evangelie', desc:'Воскресное утреннее Евангелие — одно из 11, согласно евангельскому столпу (Типикон, гл. 54). Читает диакон или священник. От Евангелия зависят три последующих текста: воскресная стихира по 50-м псалме («Воскрес Иисус от гроба...» — общая для всех гласов), эксапостиларий и утренние евангельские стихиры.'},
+          {name:'Канон утрени', book:'oktoih', desc:'Канон составляется из канонов Октоиха (воскресный на 4, крестовоскресный на 2, Богородице на 2) и Минеи (святому на 4). Ирмосы поются по Ирмологию. По 8-й песни — «Честнейшую» (по Типикону — «велегласно»).'},
+          {name:'Хвалитные псалмы', book:'chasoslov', desc:'Хвалитные псалмы (148–150) — неизменяемая часть по Часослову.'},
+          {name:'Великое славословие', book:'chasoslov', desc:'«Слава в вышних Богу...» — по Часослову.'},
+          {section:'Первый час', name:'Первый час', book:'chasoslov', desc:'Первый час — по Часослову; завершает всенощное бдение.'}
+        ]
+      },
+      vechernya:{
+        books:['chasoslov','sluzhebnik','oktoih','mineya-m','psaltir'],
+        note:'Повседневная вечерня. Неизменяемые части — по Часослову и Служебнику; изменяемые — по Октоиху и Минее.',
+        stages:[
+          {name:'Начальный возглас', book:'sluzhebnik', desc:'Священник: «Благословен Бог наш...» — по Служебнику.'},
+          {name:'Предначинательный 103-й псалом', book:'chasoslov', desc:'Читается по Часослову.'},
+          {name:'Великая ектения', book:'sluzhebnik', desc:'Диакон (или священник) — по Служебнику.'},
+          {name:'Стихиры на «Господи, воззвах»', book:'oktoih', desc:'Стихиры Октоиха по гласу седмицы; при памяти святого — с добавлением стихир Минеи.'},
+          {name:'Догматик', book:'oktoih', desc:'Богородичен догматик по гласу — из Октоиха.'},
+          {name:'Вход и «Свете тихий»', book:'chasoslov', desc:'Вход с кадилом; «Свете тихий» — по Часослову.'},
+          {name:'Прокимен дня', book:'chasoslov', desc:'Прокимен по Часослову; паремии — если указаны Типиконом.'},
+          {name:'Стихиры на стиховне', book:'oktoih', desc:'Из Октоиха, с возможным добавлением Минеи.'},
+          {name:'«Ныне отпущаеши»', book:'chasoslov', desc:'Молитва св. Симеона Богоприимца — по Часослову.'},
+          {name:'Тропарь', book:'oktoih', desc:'Тропарь из Октоиха или Минеи.'},
+          {name:'Отпуст', book:'sluzhebnik', desc:'Отпуст — по Служебнику.'}
+        ]
+      },
+      utrenya:{
+        books:['chasoslov','sluzhebnik','oktoih','mineya-m','evangelie','psaltir','irmologiy'],
+        note:'Повседневная утреня. Неизменяемые части — по Часослову и Служебнику; изменяемые — по Октоиху и Минее. Если утреня воскресная — Евангелие читается по столпу.',
+        stages:[
+          {name:'Шестопсалмие', book:'chasoslov', desc:'Шесть псалмов — неизменяемая часть по Часослову.'},
+          {name:'Великая ектения', book:'sluzhebnik', desc:'По Служебнику.'},
+          {name:'«Бог Господь» с тропарём', book:'chasoslov', desc:'«Бог Господь» — по Часослову; тропарь — из Октоиха или Минеи (воскресный тропарь гласа дважды).'},
+          {name:'Кафизмы', book:'psaltir', desc:'Рядовые кафизмы по Псалтири. Седальны — из Октоиха.'},
+          {name:'Седальны', book:'oktoih', desc:'Седальны по гласу — из Октоиха (или Минеи).'},
+          {name:'Канон', book:'oktoih', desc:'Канон из Октоиха и Минеи; ирмосы — по Ирмологию.'},
+          {name:'Хвалитные псалмы', book:'chasoslov', desc:'Псалмы 148–150 — по Часослову.'},
+          {name:'Славословие', book:'chasoslov', desc:'Вседневное славословие — по Часослову.'}
+        ]
+      },
+      liturgiya:{
+        books:['sluzhebnik','apostol','evangelie','psaltir','oktoih'],
+        note:'Литургия. Неизменяемые молитвы — по Служебнику; чтения — по Апостолу и Евангелию; песнопения гласа — по Октоиху.',
+        stages:[
+          {name:'Проскомидия', book:'sluzhebnik', desc:'Совершается священником по Служебнику.'},
+          {name:'Антифоны и «Единородный Сыне»', book:'sluzhebnik', desc:'По Служебнику.'},
+          {name:'Апостол', book:'apostol', desc:'Рядовое чтение Апостола — по богослужебному Апостолу.'},
+          {name:'Евангелие', book:'evangelie', desc:'Рядовое или праздничное Евангелие — по богослужебному Евангелию.'},
+          {name:'Евхаристический канон', book:'sluzhebnik', desc:'Тайные молитвы и возгласы — по Служебнику.'},
+          {name:'Задостойник', book:'oktoih', desc:'В период Октоиха — задостойник по гласу (или по празднику).'},
+          {name:'«Отче наш», причастие', book:'sluzhebnik', desc:'По Служебнику.'}
+        ]
+      }
+    }
+  },
+  lent:{
+    name:'Триодь Постная',
+    sub:'от Недели о мытаре и фарисее до Пасхи',
+    color:'#6b4a8f',
+    leading:'triod-post',
+    desc:'Великопостный период. Ведущая книга — Триодь Постная; Октоих в будни Великого поста почти не используется, а в воскресенья — ограниченно. Минея присоединяется только при памяти святого, имеющего службу.',
+    services:{
+      vsenoshnoe:{
+        books:['chasoslov','sluzhebnik','triod-post','mineya-m','psaltir','evangelie','irmologiy'],
+        note:'Всенощное бдение в Неделю Великого поста. Стихиры и канон — из Триоди Постной; Октоих почти не используется. Неизменяемые части — по Часослову и Служебнику. Воскресное Евангелие на утрене — по столпу.',
+        stages:[
+          {section:'Великая вечерня', name:'Начало по чину Великого поста', book:'chasoslov', desc:'Возглас, «Слава Святей...», Трисвятое по Отче наш — по Часослову.'},
+          {name:'Кафизма «Блажен муж»', book:'psaltir', desc:'Первая кафизма — по Псалтири.'},
+          {name:'Стихиры на «Господи, воззвах»', book:'triod-post', desc:'Стихиры Триоди Постной, соответствующие дню. Количество и глас указаны в Триоди.'},
+          {name:'Догматик', book:'oktoih', desc:'В воскресные дни Великого поста догматик гласа из Октоиха может сохраняться (в зависимости от типа службы).'},
+          {name:'Вход, «Свете тихий»', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Паремии', book:'triod-post', desc:'Чтения из Ветхого Завета — по Триоди Постной.'},
+          {name:'Стихиры на стиховне', book:'triod-post', desc:'По Триоди Постной.'},
+          {name:'«Ныне отпущаеши»', book:'chasoslov', desc:'По Часослову.'},
+          {section:'Утреня', name:'Шестопсалмие', book:'chasoslov', desc:'С великопостными особенностями — по Часослову.'},
+          {name:'Великая ектения, «Бог Господь»', book:'sluzhebnik', desc:'По Служебнику и Часослову.'},
+          {name:'Тропари Троичны', book:'triod-post', desc:'По Триоди Постной.'},
+          {name:'Кафизмы', book:'psaltir', desc:'Рядовые кафизмы — по Псалтири.'},
+          {name:'Канон', book:'triod-post', desc:'Из Триоди Постной; в отдельные дни — Великий канон Андрея Критского.'},
+          {name:'Евангелие на утрене (столповое)', book:'evangelie', desc:'В воскресные дни Великого поста читается воскресное утреннее Евангелие согласно евангельскому столпу (Типикон, гл. 54).'},
+          {name:'Хвалитные псалмы', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Славословие', book:'chasoslov', desc:'По Часослову.'},
+          {section:'Первый час', name:'Первый час', book:'chasoslov', desc:'По Часослову.'}
+        ]
+      },
+      vechernya:{
+        books:['chasoslov','sluzhebnik','triod-post','mineya-m','psaltir'],
+        note:'Великопостная вечерня. Неизменяемые части — по Часослову и Служебнику; изменяемые — по Триоди Постной. Минея — только при памяти святого.',
+        stages:[
+          {name:'Начало по чину Великого поста', book:'chasoslov', desc:'Возглас, «Слава Святей...», Трисвятое по Отче наш — по Часослову.'},
+          {name:'Кафизма Псалтири', book:'psaltir', desc:'Рядовая кафизма — по Псалтири.'},
+          {name:'Стихиры на «Господи, воззвах»', book:'triod-post', desc:'Стихиры Триоди Постной, соответствующие дню или памяти святого.'},
+          {name:'Вход, «Свете тихий»', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Паремии', book:'triod-post', desc:'Чтения из Ветхого Завета — по Триоди Постной (в будни Великого поста).'},
+          {name:'«Да исправится молитва моя»', book:'triod-post', desc:'Особое песнопение великопостной вечерни — по Триоди Постной.'},
+          {name:'Стихиры на стиховне', book:'triod-post', desc:'По Триоди Постной.'},
+          {name:'«Ныне отпущаеши»', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Молитва св. Ефрема Сирина', book:'triod-post', desc:'С поклонами — неотъемлемая часть великопостных служб по Триоди.'},
+          {name:'Отпуст', book:'sluzhebnik', desc:'По Служебнику.'}
+        ]
+      },
+      utrenya:{
+        books:['chasoslov','sluzhebnik','triod-post','psaltir','evangelie','irmologiy'],
+        note:'Великопостная утреня. Неизменяемые части — по Часослову и Служебнику; изменяемые — по Триоди Постной. В отдельные дни читается Великий канон Андрея Критского.',
+        stages:[
+          {name:'Двупсалмие и шестопсалмие', book:'chasoslov', desc:'По Часослову, с великопостными особенностями.'},
+          {name:'Великая ектения', book:'sluzhebnik', desc:'По Служебнику.'},
+          {name:'«Бог Господь» с тропарём', book:'chasoslov', desc:'«Бог Господь» — по Часослову; тропарь — по Триоди.'},
+          {name:'Кафизмы', book:'psaltir', desc:'Рядовые кафизмы — по Псалтири.'},
+          {name:'Седальны', book:'triod-post', desc:'По Триоди Постной.'},
+          {name:'Тропари Троичны', book:'triod-post', desc:'По Триоди Постной.'},
+          {name:'Канон', book:'triod-post', desc:'Из Триоди Постной; ирмосы — по Ирмологию.'},
+          {name:'Великий канон (в отдельные дни)', book:'triod-post', desc:'Великий канон Андрея Критского — по Триоди Постной.'},
+          {name:'Хвалитные псалмы', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Славословие', book:'chasoslov', desc:'По Часослову.'}
+        ]
+      },
+      liturgiya:{
+        books:['sluzhebnik','apostol','evangelie','triod-post'],
+        note:'В будни Великого поста — Литургия Преждеосвященных Даров (по Служебнику); в субботы и воскресенья — Литургия Иоанна Златоуста или Василия Великого. Апостол и Евангелие — чтения дня; Триодь — песнопения.',
+        stages:[
+          {name:'Проскомидия и Литургия', book:'sluzhebnik', desc:'В будни — Литургия Преждеосвященных Даров; в субботы и воскресенья — полная Литургия. Всё по Служебнику.'},
+          {name:'Апостол', book:'apostol', desc:'Рядовое чтение Апостола — по богослужебному Апостолу.'},
+          {name:'Евангелие', book:'evangelie', desc:'Рядовое или праздничное Евангелие — по богослужебному Евангелию.'},
+          {name:'Песнопения Триоди', book:'triod-post', desc:'Вместо «Достойно есть» и другие песнопения — по Триоди Постной.'},
+          {name:'«Отче наш», причастие', book:'sluzhebnik', desc:'По Служебнику.'}
+        ]
+      }
+    }
+  },
+  pentecost:{
+    name:'Триодь Цветная',
+    sub:'от Пасхи до Недели Всех святых',
+    color:'#2e7d5b',
+    leading:'triod-cvet',
+    desc:'Пасхальный период. Октоих в это время почти полностью отменяется: все изменяемые песнопения берутся из Триоди Цветной. Особый строй служб — пасхальный, с пением «Христос воскресе» вплоть до отдания Пасхи.',
+    services:{
+      vsenoshnoe:{
+        books:['chasoslov','sluzhebnik','triod-cvet','evangelie','psaltir'],
+        note:'Всенощное бдение в пасхальный период. Стихиры и канон — из Триоди Цветной; Октоих не используется. Неизменяемые части — по Часослову и Служебнику. Воскресное Евангелие на утрене — по столпу.',
+        stages:[
+          {section:'Великая вечерня', name:'Начало, «Христос воскресе»', book:'chasoslov', desc:'Возглас, «Христос воскресе» (трижды) — в пасхальный период.'},
+          {name:'103-й псалом, великая ектения', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Стихиры на «Господи, воззвах»', book:'triod-cvet', desc:'Стихиры Пасхи или праздника — по Триоди Цветной. Глас и количество указаны в Триоди.'},
+          {name:'Догматик', book:'oktoih', desc:'В пасхальный период догматик Октоиха может заменяться пасхальными песнопениями Триоди Цветной (в зависимости от дня).'},
+          {name:'Вход, «Свете тихий»', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Стихиры на стиховне', book:'triod-cvet', desc:'Пасхальные стихиры — по Триоди Цветной.'},
+          {name:'«Ныне отпущаеши»', book:'chasoslov', desc:'По Часослову.'},
+          {section:'Утреня', name:'Шестопсалмие', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Великая ектения, «Бог Господь»', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Канон Пасхи', book:'triod-cvet', desc:'Пасхальный канон Иоанна Дамаскина — по Триоди Цветной.'},
+          {name:'Евангелие на утрене (столповое)', book:'evangelie', desc:'В воскресные дни пасхального периода читается воскресное утреннее Евангелие согласно евангельскому столпу (Типикон, гл. 54).'},
+          {name:'Хвалитные псалмы', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Славословие', book:'chasoslov', desc:'По Часослову.'},
+          {section:'Первый час', name:'Первый час', book:'chasoslov', desc:'По Часослову.'}
+        ]
+      },
+      vechernya:{
+        books:['chasoslov','sluzhebnik','triod-cvet'],
+        note:'Вечерня в пасхальный период. Неизменяемые части — по Часослову и Служебнику; изменяемые — по Триоди Цветной. Октоих не используется.',
+        stages:[
+          {name:'Начало, «Христос воскресе»', book:'chasoslov', desc:'Возглас, пасхальное начало — по Часослову.'},
+          {name:'103-й псалом, великая ектения', book:'chasoslov', desc:'По Часослову и Служебнику.'},
+          {name:'Стихиры на «Господи, воззвах»', book:'triod-cvet', desc:'Стихиры Пасхи или праздника — по Триоди Цветной.'},
+          {name:'Вход, «Свете тихий»', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Стихиры на стиховне', book:'triod-cvet', desc:'Пасхальные стихиры — по Триоди Цветной.'},
+          {name:'«Ныне отпущаеши»', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Тропарь', book:'triod-cvet', desc:'Тропарь праздника — по Триоди Цветной.'},
+          {name:'Отпуст', book:'sluzhebnik', desc:'По Служебнику.'}
+        ]
+      },
+      utrenya:{
+        books:['chasoslov','sluzhebnik','triod-cvet','evangelie','psaltir'],
+        note:'Пасхальная заутреня — по Триоди Цветной. Евангелие читается на воскресной утрене; Псалтирь — для кафизм.',
+        stages:[
+          {name:'Шестопсалмие', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Великая ектения, «Бог Господь»', book:'chasoslov', desc:'По Часослову и Служебнику.'},
+          {name:'Канон Пасхи', book:'triod-cvet', desc:'Пасхальный канон Иоанна Дамаскина — по Триоди Цветной.'},
+          {name:'Евангелие на утрене (столповое)', book:'evangelie', desc:'В воскресные дни пасхального периода читается воскресное утреннее Евангелие согласно евангельскому столпу.'},
+          {name:'Кафизмы', book:'psaltir', desc:'В пасхальный период могут опускаться; в остальные дни — по Псалтири.'},
+          {name:'Хвалитные псалмы', book:'chasoslov', desc:'По Часослову.'},
+          {name:'Славословие', book:'chasoslov', desc:'По Часослову.'}
+        ]
+      },
+      liturgiya:{
+        books:['sluzhebnik','apostol','evangelie','triod-cvet'],
+        note:'Служебник — молитвы Литургии; Апостол и Евангелие — чтения дня; Триодь Цветная — задостойник и пасхальные песнопения.',
+        stages:[
+          {name:'Проскомидия и Литургия', book:'sluzhebnik', desc:'Молитвы священника — по Служебнику.'},
+          {name:'Апостол', book:'apostol', desc:'Рядовое чтение — по богослужебному Апостолу.'},
+          {name:'Евангелие', book:'evangelie', desc:'Рядовое или праздничное Евангелие — по богослужебному Евангелию.'},
+          {name:'Задостойник', book:'triod-cvet', desc:'«Ангел вопияше...» и другие пасхальные песнопения — по Триоди Цветной.'},
+          {name:'«Отче наш», причастие', book:'sluzhebnik', desc:'По Служебнику.'}
+        ]
+      }
+    }
+  }
+};
+
+let currentPeriod = 'octoechos';
+let currentService = 'vechernya';
+
+/* ============================================================
+   4. НАВИГАЦИЯ
+   ============================================================ */
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('section').forEach(s=>s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+/* ============================================================
+   5. БИБЛИОТЕКА
+   ============================================================ */
+let currentFilter = 'all';
+
+function buildFilters(){
+  const f = document.getElementById('filters');
+  let html = `<button class="active" data-f="all">Все книги (${BOOKS.length})</button>`;
+  for(const k in SECTIONS){
+    const n = BOOKS.filter(b=>b.section===k).length;
+    html += `<button data-f="${k}">${SECTIONS[k].name} (${n})</button>`;
+  }
+  f.innerHTML = html;
+  f.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      f.querySelectorAll('button').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      currentFilter = b.dataset.f;
+      renderBooks();
+    });
+  });
+}
+
+function renderBooks(){
+  const grid = document.getElementById('bookGrid');
+  const list = currentFilter==='all' ? BOOKS : BOOKS.filter(b=>b.section===currentFilter);
+  grid.innerHTML = list.map(b=>`
+    <div class="card ${SECTIONS[b.section].cls}" data-id="${b.id}">
+      <div class="badge">${SECTIONS[b.section].name}</div>
+      <h4>${b.title}</h4>
+      <p>${b.def.length>130?b.def.slice(0,130)+'…':b.def}</p>
+      <div class="user">👤 ${b.user}</div>
+    </div>`).join('');
+  grid.querySelectorAll('.card').forEach(c=>{
+    c.addEventListener('click',()=>openBook(c.dataset.id));
+  });
+}
+
+function openBook(id){
+  const b = BOOK_BY_ID[id];
+  document.getElementById('mTitle').textContent = b.title;
+  document.getElementById('mBody').innerHTML = `
+    <div class="row"><div class="lbl">Определение</div><div class="val">${b.def}</div></div>
+    <div class="two-col">
+      <div>
+        <div class="row"><div class="lbl">Кто использует</div><div class="val">👤 ${b.user}</div></div>
+        <div class="row"><div class="lbl">Раздел</div><div class="val">${SECTIONS[b.section].name}</div></div>
+        <div class="row"><div class="lbl">Источник на Азбуке.ру</div><a class="src-link" href="${b.url}" target="_blank" rel="noopener">${b.url}</a></div>
+      </div>
+      <div>
+        <div class="lbl" style="font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:#8a7f68;font-family:Arial;margin-bottom:6px">Характерная страница</div>
+        <div class="mock-page">${b.mock}</div>
+      </div>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+document.getElementById('mClose').addEventListener('click',closeModal);
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+function closeModal(){document.getElementById('modal').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+/* ============================================================
+   6. СХЕМА СЛУЖБЫ
+   ============================================================ */
+function buildPeriodButtons(){
+  const wrap = document.getElementById('periodBtns');
+  wrap.innerHTML = Object.keys(SERVICE_DATA).map(k=>`
+    <button data-p="${k}" class="${k===currentPeriod?'active':''}">
+      <span class="dot" style="background:${SERVICE_DATA[k].color}"></span>${SERVICE_DATA[k].name}
+    </button>`).join('');
+  wrap.querySelectorAll('button').forEach(b=>{
+    b.addEventListener('click',()=>selectPeriod(b.dataset.p));
+  });
+}
+
+function selectPeriod(p){
+  currentPeriod = p;
+  document.querySelectorAll('#periodBtns button').forEach(b=>{
+    b.classList.toggle('active',b.dataset.p===p);
+  });
+  renderSchema();
+}
+
+document.querySelectorAll('#svcTabs button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#svcTabs button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    currentService = b.dataset.svc;
+    renderSchema();
+  });
+});
+
+document.querySelectorAll('.arc').forEach(a=>{
+  a.addEventListener('click',()=>selectPeriod(a.dataset.period));
+});
+
+function renderStages(stages){
+  let html = '';
+  let lastSection = null;
+  let n = 0;
+  stages.forEach((stage,i)=>{
+    if(stage.section && stage.section!==lastSection){
+      html += `<div class="stage-section">${stage.section}</div>`;
+      lastSection = stage.section;
+    }
+    n++;
+    const type = bookType(stage.book);
+    const badge = type==='fixed'
+      ? '<span class="type-badge fixed">неизм.</span>'
+      : '<span class="type-badge changing">изм.</span>';
+    html += `
+      <div class="stage-item">
+        <div class="stage-head" data-idx="${i}">
+          <span class="stage-name"><span class="num">${n}</span>${stage.name}</span>
+          <span class="stage-right">${badge}<span class="arrow">▶</span></span>
+        </div>
+        <div class="stage-body" id="stageBody${i}">
+          <div class="src-book">📖 ${BOOK_BY_ID[stage.book].title}</div>
+          <div class="src-desc">${stage.desc}</div>
+        </div>
+      </div>`;
+  });
+  return html;
+}
+
+function renderSchema(){
+  const p = SERVICE_DATA[currentPeriod];
+  document.getElementById('periodTitle').textContent = p.name+' · '+p.sub;
+  document.getElementById('leadingBook').textContent = 'Ведущая книга: '+BOOK_BY_ID[p.leading].title;
+  document.getElementById('leadingBook').style.background = p.color;
+  document.getElementById('leadingBook').style.color = '#fff';
+  document.getElementById('periodDesc').textContent = p.desc;
+
+  const s = p.services[currentService];
+  if(!s) return;
+  const chips = document.getElementById('schemaBooks');
+  chips.innerHTML = s.books.map(id=>{
+    return `<span class="book-chip" data-id="${id}">${BOOK_BY_ID[id].title}</span>`;
+  }).join('');
+  chips.querySelectorAll('.book-chip').forEach(c=>{
+    c.addEventListener('click',()=>openBook(c.dataset.id));
+  });
+
+  document.getElementById('serviceNote').innerHTML = '<b>Как составляется служба:</b> '+s.note;
+
+  const st = document.getElementById('stagesList');
+  st.innerHTML = renderStages(s.stages);
+  st.querySelectorAll('.stage-head').forEach(h=>{
+    h.addEventListener('click',()=>{
+      const body = h.nextElementSibling;
+      const isOpen = body.classList.contains('open');
+      st.querySelectorAll('.stage-body').forEach(b=>b.classList.remove('open'));
+      st.querySelectorAll('.stage-head').forEach(x=>x.classList.remove('open'));
+      if(!isOpen){
+        body.classList.add('open');
+        h.classList.add('open');
+      }
+    });
+  });
+}
+
+/* ============================================================
+   7. СТОЛПЫ ЕВАНГЕЛЬСКИЕ: РЕНДЕР
+   ============================================================ */
+function renderStolpy(){
+  const grid = document.getElementById('stolpGrid');
+  grid.innerHTML = GOSPEL_STOLPY.map((s,i)=>`
+    <div class="stolp-cell ${i===currentStolpIndex?'active':''}" data-idx="${i}">
+      <div class="gl">глас ${s.gl}</div>
+      <div class="ev">${s.ev}</div>
+    </div>`).join('');
+  grid.querySelectorAll('.stolp-cell').forEach(c=>{
+    c.addEventListener('click',()=>{
+      currentStolpIndex = +c.dataset.idx;
+      renderStolpy();
+      updateStolpInfo();
+    });
+  });
+  updateStolpInfo();
+}
+
+function updateStolpInfo(){
+  const s = GOSPEL_STOLPY[currentStolpIndex];
+  const info = document.getElementById('stolpInfo');
+  info.innerHTML = `<b>Неделя ${currentStolpIndex+1}-я по Пятидесятнице (глас ${s.gl}).</b> На утрене читается <b>Евангелие воскресное ${s.ev}-е</b>: ${GOSPEL_NAMES[s.ev]}. От него зависят стихира по 50-м псалме («Воскрес Иисус от гроба...» — общая для всех гласов), эксапостиларий и утренние евангельские стихиры (Октоих, приложение).`;
+}
+
+/* ============================================================
+   8. ТРЕНАЖЁР
+   ============================================================ */
+const G1_POOL = ['evangelie','apostol','psaltir','sluzhebnik','chasoslov','oktoih','mineya-m','mineya-o','mineya-p','triod-post','triod-cvet','tipikon','irmologiy','molebny','trebnik','chinovnik'];
+let g1Current = null, g1Score = 0, g1Total = 0, g1Answered = false;
+
+function g1Next(){
+  g1Answered = false;
+  const pool = G1_POOL.filter(id=>id!==g1Current);
+  g1Current = pool[Math.floor(Math.random()*pool.length)];
+  const correct = BOOK_BY_ID[g1Current];
+  let cleanMock = correct.mock.replace(/<div class="mp-head">.*?<\/div>/,'');
+  document.getElementById('g1mock').innerHTML = `<div class="mock-page">${cleanMock}</div>`;
+
+  const others = BOOKS.filter(b=>b.id!==g1Current);
+  const distract = [];
+  while(distract.length<3){
+    const r = others[Math.floor(Math.random()*others.length)];
+    if(!distract.find(x=>x.id===r.id)) distract.push(r);
+  }
+  const opts = [correct,...distract].sort(()=>Math.random()-0.5);
+
+  const box = document.getElementById('g1opts');
+  box.innerHTML = opts.map(b=>`<button class="opt" data-id="${b.id}">${b.title}</button>`).join('');
+  box.querySelectorAll('.opt').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(g1Answered) return;
+      g1Answered = true;
+      g1Total++;
+      const ok = btn.dataset.id===g1Current;
+      if(ok) g1Score++;
+      box.querySelectorAll('.opt').forEach(o=>{
+        o.disabled = true;
+        if(o.dataset.id===g1Current) o.classList.add('correct');
+        else if(o===btn) o.classList.add('wrong');
+      });
+      const fb = document.getElementById('g1fb');
+      fb.textContent = ok ? '✓ Верно! Это '+correct.title : '✗ Это '+correct.title+'. '+correct.def.slice(0,90)+'…';
+      fb.className = 'feedback '+(ok?'ok':'no');
+      document.getElementById('g1score').textContent = `Счёт: ${g1Score} / ${g1Total}`;
+    });
+  });
+  document.getElementById('g1fb').textContent = '';
+}
+
+const ROLES = ['Священник','Диакон','Чтец','Клирос / регент','Епископ (архиерей)'];
+let g2Current = null, g2Score = 0, g2Total = 0, g2Answered = false;
+
+function roleKey(user){
+  if(user.includes('Епископ')) return 'Епископ (архиерей)';
+  if(user.includes('Диакон')||user.includes('диакон')) return 'Диакон';
+  if(user.startsWith('Клирос')||user.includes('регент')) return 'Клирос / регент';
+  if(user.startsWith('Чтец')||user.includes('Чтец')) return 'Чтец';
+  if(user.includes('Священник')) return 'Священник';
+  return 'Священник';
+}
+
+function g2Next(){
+  g2Answered = false;
+  const pool = BOOKS.filter(b=>b.id!==(g2Current&&g2Current.id));
+  g2Current = pool[Math.floor(Math.random()*pool.length)];
+  const correctRole = roleKey(g2Current.user);
+  document.getElementById('g2book').textContent = '«'+g2Current.title+'»';
+
+  const box = document.getElementById('g2opts');
+  box.innerHTML = ROLES.map(r=>`<button class="opt" data-r="${r}">${r}</button>`).join('');
+  box.querySelectorAll('.opt').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      if(g2Answered) return;
+      g2Answered = true;
+      g2Total++;
+      const ok = btn.dataset.r===correctRole;
+      if(ok) g2Score++;
+      box.querySelectorAll('.opt').forEach(o=>{
+        o.disabled = true;
+        if(o.dataset.r===correctRole) o.classList.add('correct');
+        else if(o===btn) o.classList.add('wrong');
+      });
+      const fb = document.getElementById('g2fb');
+      fb.textContent = ok ? '✓ Верно! '+g2Current.user : '✗ Основной пользователь: '+g2Current.user;
+      fb.className = 'feedback '+(ok?'ok':'no');
+      document.getElementById('g2score').textContent = `Счёт: ${g2Score} / ${g2Total}`;
+    });
+  });
+  document.getElementById('g2fb').textContent = '';
+}
+
+const G3_TASKS = [
+  {p:'octoechos', s:'vechernya',  label:'Вечерня в будний день периода Октоиха'},
+  {p:'octoechos', s:'utrenya',    label:'Утреня в будний день периода Октоиха'},
+  {p:'octoechos', s:'liturgiya',  label:'Литургия в период Октоиха'},
+  {p:'octoechos', s:'vsenoshnoe', label:'Всенощное бдение в воскресный день (Октоих)'},
+  {p:'lent',      s:'vechernya',  label:'Вечерня в будний день Великого поста'},
+  {p:'lent',      s:'utrenya',    label:'Утреня в Великом посту'},
+  {p:'lent',      s:'liturgiya',  label:'Литургия Преждеосвященных Даров'},
+  {p:'lent',      s:'vsenoshnoe', label:'Всенощное бдение в Неделю Великого поста'},
+  {p:'pentecost', s:'vechernya',  label:'Вечерня в период Триоди Цветной'},
+  {p:'pentecost', s:'utrenya',    label:'Утреня в период Триоди Цветной'},
+  {p:'pentecost', s:'liturgiya',  label:'Литургия в период Триоди Цветной'},
+  {p:'pentecost', s:'vsenoshnoe', label:'Всенощное бдение в праздник Пятидесятницы'},
+  {p:'octoechos', s:'vsenoshnoe', label:'Праздничное всенощное бдение (Октоих)'},
+  {p:'lent',      s:'utrenya',    label:'Утреня с Великим каноном (Триодь Постная)'}
+];
+let g3Task = null, g3Score = 0, g3Total = 0, g3Checked = false, g3Selected = new Set();
+
+function g3Next(){
+  g3Checked = false;
+  g3Selected = new Set();
+  g3Task = G3_TASKS[Math.floor(Math.random()*G3_TASKS.length)];
+  document.getElementById('g3task').textContent = '📋 '+g3Task.label;
+
+  const box = document.getElementById('g3chips');
+  box.innerHTML = BOOKS.map(b=>`<span class="chip-sel" data-id="${b.id}">${b.title}</span>`).join('');
+  box.querySelectorAll('.chip-sel').forEach(c=>{
+    c.addEventListener('click',()=>{
+      if(g3Checked) return;
+      c.classList.toggle('on');
+      if(c.classList.contains('on')) g3Selected.add(c.dataset.id);
+      else g3Selected.delete(c.dataset.id);
+    });
+  });
+  document.getElementById('g3fb').textContent = '';
+  document.getElementById('g3fb').className = 'feedback';
+}
+
+document.getElementById('g3check').addEventListener('click',()=>{
+  if(g3Checked) return;
+  g3Checked = true;
+  g3Total++;
+  const correct = new Set(SERVICE_DATA[g3Task.p].services[g3Task.s].books);
+  let allRight = true;
+
+  document.querySelectorAll('#g3chips .chip-sel').forEach(c=>{
+    const id = c.dataset.id;
+    const isCorrect = correct.has(id);
+    const isSel = g3Selected.has(id);
+    c.classList.remove('on');
+    if(isCorrect&&isSel) c.classList.add('right');
+    else if(isCorrect&&!isSel){c.classList.add('missed');allRight=false;}
+    else if(!isCorrect&&isSel){c.classList.add('extra');allRight=false;}
+  });
+
+  if(allRight) g3Score++;
+  const fb = document.getElementById('g3fb');
+  const names = [...correct].map(id=>BOOK_BY_ID[id].title).join(', ');
+  fb.textContent = allRight ? '✓ Отлично! Служба собрана верно.' : '✗ Правильный набор: '+names;
+  fb.className = 'feedback '+(allRight?'ok':'no');
+  document.getElementById('g3score').textContent = `Счёт: ${g3Score} / ${g3Total}`;
+});
+
+/* ============================================================
+   9. ТЕСТ
+   ============================================================ */
+const QUIZ = [
+  {q:'Какая книга содержит текст Священного Писания, разделённый на 20 кафизм?',
+   o:['Евангелие','Апостол','Псалтирь','Часослов'], a:2},
+  {q:'В какой книге находятся молитвы священника для совершения Литургии?',
+   o:['Требник','Служебник','Часослов','Минея месячная'], a:1},
+  {q:'Какая книга содержит изменяемые песнопения, распределённые по восьми гласам?',
+   o:['Октоих','Триодь Постная','Ирмологий','Минея общая'], a:0},
+  {q:'Какая книга используется в период от Недели о мытаре и фарисее до Пасхи?',
+   o:['Триодь Цветная','Октоих','Триодь Постная','Минея праздничная'], a:2},
+  {q:'Что такое «Минея общая»?',
+   o:['Сборник служб на великие праздники',
+      'Сборник общих песнопений в честь целого лика святых',
+      'Сборник ирмосов восьми гласов',
+      'Сборник молебнов на разные случаи'], a:1},
+  {q:'Какая книга регулирует порядок соединения текстов из разных книг в конкретный день года?',
+   o:['Служебник','Часослов','Типикон (Устав)','Ирмологий'], a:2},
+  {q:'Кто является основным пользователем Требника?',
+   o:['Чтец','Клирос','Священник','Диакон'], a:2},
+  {q:'Какая книга содержит чины хиротоний и освящения храма?',
+   o:['Служебник','Чиновник архиерейского священнослужения','Требник','Книга молебных пений'], a:1},
+  {q:'От какого праздника до какого периода поётся Триодь Цветная?',
+   o:['От Рождества до Крещения','От Пасхи до Недели Всех святых',
+      'От Недели о мытаре и фарисее до Пасхи','От Троицы до Успения'], a:1},
+  {q:'Что содержит Ирмологий?',
+   o:['Ирмосы канонов всех восьми гласов','Прокимны и аллилуиарии',
+      'Кафизмы Псалтири','Молитвы священника'], a:0},
+  {q:'Какая книга содержит неизменяемые молитвословия суточных служб, кроме Литургии?',
+   o:['Служебник','Часослов','Октоих','Минея месячная'], a:1},
+  {q:'Что означает слово «Октоих»?',
+   o:['Осмогласник (восемь гласов)','Пятидесятница','Двенадцать псалмов','Три песни канона'], a:0},
+  {q:'Какая книга содержит последования молебнов на разные жизненные случаи?',
+   o:['Требник','Книга молебных пений','Служебник','Типикон'], a:1},
+  {q:'Кто является основным пользователем Чиновника архиерейского священнослужения?',
+   o:['Священник','Диакон','Епископ (архиерей)','Чтец'], a:2},
+  {q:'Что такое кафизма?',
+   o:['Раздел Псалтири (всего 20 кафизм)','Часть Литургии','Песнопение Октоиха','Вид ектении'], a:0},
+  {q:'Какая книга содержит службы на великие и особо чтимые праздники?',
+   o:['Минея месячная','Минея общая','Минея праздничная','Триодь Цветная'], a:2},
+  {q:'Какая книга содержит Деяния и Послания святых апостолов?',
+   o:['Евангелие','Апостол','Псалтирь','Служебник'], a:1},
+  {q:'Какая книга содержит чин крещения и венчания?',
+   o:['Служебник','Требник','Чиновник','Книга молебных пений'], a:1},
+  {q:'Что читается на утрене в воскресный и праздничный день?',
+   o:['Апостол','Евангелие','Псалтирь','Триодь'], a:1},
+  {q:'Что содержит Минея месячная?',
+   o:['Службы только на великие праздники',
+      'Изменяемые молитвословия на каждый день месяца',
+      'Ирмосы восьми гласов',
+      'Молитвы священника'], a:1},
+  {q:'Что такое «догматик»?',
+   o:['Богородичен Октоиха, излагающий догмат о рождении Сына Божия от Девы Марии',
+      'Тропарь воскресный',
+      'Стихира на стиховне',
+      'Чтение из Апостола'], a:0},
+  {q:'Сколько воскресных утренних Евангелий в евангельском столпе?',
+   o:['8','11','12','4'], a:1},
+  {q:'Сколько воскресных стихир Октоиха поётся на «Господи, воззвах» в воскресный день (без памяти святого)?',
+   o:['3','4','6','10'], a:0},
+  {q:'Где находится таблица евангельских столпов?',
+   o:['В Служебнике','В Часослове','В 54-й главе Типикона','В Требнике'], a:2},
+  {q:'Что поётся на «И ныне» после стихир на «Господи, воззвах» на великой вечерне в воскресный день?',
+   o:['Тропарь воскресный','Догматик гласа','Стихира евангельская','Кондак'], a:1}
+];
+
+let quizAnswered = 0, quizCorrect = 0;
+
+function renderQuiz(){
+  quizAnswered = 0; quizCorrect = 0;
+  const list = document.getElementById('quizList');
+  list.innerHTML = QUIZ.map((q,i)=>`
+    <div class="q-card">
+      <div class="q-num">ВОПРОС ${i+1} ИЗ ${QUIZ.length}</div>
+      <div class="q-text">${q.q}</div>
+      <div class="q-opts">${q.o.map((o,j)=>`<button class="q-opt" data-i="${i}" data-j="${j}">${o}</button>`).join('')}</div>
+    </div>`).join('');
+  document.getElementById('quizResult').innerHTML = '';
+
+  list.querySelectorAll('.q-opt').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const i = +btn.dataset.i, j = +btn.dataset.j;
+      const card = btn.closest('.q-card');
+      if(card.dataset.done) return;
+      card.dataset.done = '1';
+      quizAnswered++;
+      const ok = j===QUIZ[i].a;
+      if(ok) quizCorrect++;
+      card.querySelectorAll('.q-opt').forEach(o=>{
+        o.disabled = true;
+        if(+o.dataset.j===QUIZ[i].a) o.classList.add('correct');
+        else if(o===btn) o.classList.add('wrong');
+      });
+      if(quizAnswered===QUIZ.length) showResult();
+    });
+  });
+}
+
+function showResult(){
+  const pct = Math.round(quizCorrect/QUIZ.length*100);
+  let verdict, color;
+  if(pct===100){verdict='Блестяще! Материал освоен в совершенстве.';color='#2e7d5b';}
+  else if(pct>=80){verdict='Отличный результат. Осталось уточнить детали.';color='#2e7d5b';}
+  else if(pct>=60){verdict='Хорошо, но есть темы для повторения.';color='#c9a227';}
+  else {verdict='Стоит вернуться к модулю «Библиотека» и «Схема службы».';color='#a03030';}
+
+  document.getElementById('quizResult').innerHTML = `
+    <div class="result-banner">
+      <div class="big">${quizCorrect} / ${QUIZ.length}</div>
+      <div class="txt" style="color:${color};font-weight:bold">${pct}% · ${verdict}</div>
+      <div class="txt">Правильных ответов: ${quizCorrect}. Неправильных: ${QUIZ.length-quizCorrect}.</div>
+    </div>`;
+}
+
+document.getElementById('quizReset').addEventListener('click',renderQuiz);
+
+/* ============================================================
+   10. ИНИЦИАЛИЗАЦИЯ
+   ============================================================ */
+buildFilters();
+renderBooks();
+buildPeriodButtons();
+renderSchema();
+renderStolpy();
+g1Next();
+g2Next();
+g3Next();
+renderQuiz();
+
+document.getElementById('g1next').addEventListener('click',g1Next);
+document.getElementById('g2next').addEventListener('click',g2Next);
+document.getElementById('g3next').addEventListener('click',g3Next);
+</script>
+</body>
+</html>
